@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Poly from "./pages/Poly";
 import Wob from "./pages/Wob";
 import Ori from "./pages/Ori";
+import Gra from "./pages/Gra";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/poly" element={<Poly />} />
           <Route path="/wob" element={<Wob />} />
           <Route path="/ori" element={<Ori />} />
+          <Route path="/gra" element={<Gra />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

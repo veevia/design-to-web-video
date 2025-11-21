@@ -111,3 +111,20 @@ All colors MUST be HSL.
 .glow-blue {
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
 }
+
+.antigravity-title {
+  font-size: clamp(3rem, 15vw, 12rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.antigravity-word {
+  display: block;
+  text-transform: lowercase;
+  font-family: "Product Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
