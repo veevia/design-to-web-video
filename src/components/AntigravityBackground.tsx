@@ -15,10 +15,13 @@ export const AntigravityBackground = () => {
 
     const particles: Particle[] = [];
     const trails: Trail[] = [];
-    const particleCount = 100;
-    const maxTrails = 50;
+    const particleCount = 150;
+    const maxTrails = 30;
     let mouseX = canvas.width / 2;
     let mouseY = canvas.height / 2;
+    let mouseVelocity = 0;
+    let prevMouseX = mouseX;
+    let prevMouseY = mouseY;
 
     class Trail {
       x: number;
@@ -52,20 +55,26 @@ export const AntigravityBackground = () => {
       vx: number;
       vy: number;
       radius: number;
-      color: string;
+      baseColor: string;
+      currentColor: string;
       prevX: number;
       prevY: number;
+      hue: number;
 
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.prevX = this.x;
         this.prevY = this.y;
-        this.vx = (Math.random() - 0.5) * 2;
-        this.vy = (Math.random() - 0.5) * 2;
-        this.radius = Math.random() * 3 + 1;
-        const colors = ["rgb(66, 133, 244)", "rgb(234, 67, 53)", "rgb(251, 188, 4)", "rgb(52, 163, 83)"];
-        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = (Math.random() - 0.5) * 1.5;
+        this.radius = Math.random() * 2 + 1.5;
+        
+        // Google colors in HSL
+        const colorHues = [217, 4, 45, 145]; // Blue, Red, Yellow, Green
+        this.hue = colorHues[Math.floor(Math.random() * colorHues.length)];
+        this.baseColor = `hsl(${this.hue}, 89%, 61%)`;
+        this.currentColor = this.baseColor;
       }
 
       update() {
@@ -77,14 +86,25 @@ export const AntigravityBackground = () => {
         const dx = this.x - mouseX;
         const dy = this.y - mouseY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const force = Math.min(200 / distance, 5);
+        
+        // Stronger repulsion force when closer
+        const repelRadius = 150;
+        if (distance < repelRadius) {
+          const force = (1 - distance / repelRadius) * 8;
+          this.vx += (dx / distance) * force * 0.1;
+          this.vy += (dy / distance) * force * 0.1;
+        }
 
-        this.vx += (dx / distance) * force * 0.02;
-        this.vy += (dy / distance) * force * 0.02;
+        // Color shift based on cursor velocity
+        const velocityFactor = Math.min(mouseVelocity / 50, 1);
+        const hueShift = velocityFactor * 60;
+        const saturation = 89 + velocityFactor * 10;
+        const lightness = 61 + velocityFactor * 20;
+        this.currentColor = `hsl(${this.hue + hueShift}, ${saturation}%, ${lightness}%)`;
 
-        // Apply friction
-        this.vx *= 0.98;
-        this.vy *= 0.98;
+        // Apply stronger friction for smoother movement
+        this.vx *= 0.95;
+        this.vy *= 0.95;
 
         // Update position
         this.x += this.vx;
@@ -92,8 +112,8 @@ export const AntigravityBackground = () => {
 
         // Create trail if moving fast enough
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (speed > 0.5 && trails.length < maxTrails) {
-          trails.push(new Trail(this.prevX, this.prevY, this.color));
+        if (speed > 1.5 && trails.length < maxTrails) {
+          trails.push(new Trail(this.prevX, this.prevY, this.currentColor));
         }
 
         // Wrap around edges
@@ -105,9 +125,18 @@ export const AntigravityBackground = () => {
 
       draw() {
         if (!ctx) return;
+        
+        // Particle with subtle glow
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        
+        // Glow effect
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 2);
+        gradient.addColorStop(0, this.currentColor);
+        gradient.addColorStop(0.5, this.currentColor.replace(')', ', 0.5)').replace('hsl', 'hsla'));
+        gradient.addColorStop(1, this.currentColor.replace(')', ', 0)').replace('hsl', 'hsla'));
+        
+        ctx.fillStyle = gradient;
         ctx.fill();
       }
     }
@@ -118,13 +147,27 @@ export const AntigravityBackground = () => {
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
+      const newMouseX = e.clientX;
+      const newMouseY = e.clientY;
+      
+      // Calculate mouse velocity for color shifting
+      const dx = newMouseX - prevMouseX;
+      const dy = newMouseY - prevMouseY;
+      mouseVelocity = Math.sqrt(dx * dx + dy * dy);
+      
+      prevMouseX = newMouseX;
+      prevMouseY = newMouseY;
+      mouseX = newMouseX;
+      mouseY = newMouseY;
     };
 
     const animate = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      // Clear with very subtle fade for trails
+      ctx.fillStyle = "rgba(0, 0, 0, 0.03)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Gradually reduce mouse velocity
+      mouseVelocity *= 0.9;
 
       // Update and draw trails
       trails.forEach((trail, index) => {
@@ -140,17 +183,18 @@ export const AntigravityBackground = () => {
         particle.update();
         particle.draw();
 
-        // Draw connections
+        // Draw subtle connections between nearby particles
         particles.forEach((otherParticle) => {
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 100) {
+          if (distance < 80) {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.strokeStyle = `rgba(66, 133, 244, ${(1 - distance / 100) * 0.3})`;
+            const opacity = (1 - distance / 80) * 0.15;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -178,7 +222,7 @@ export const AntigravityBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full opacity-80"
+      className="absolute inset-0 w-full h-full opacity-90"
       style={{ pointerEvents: "none", mixBlendMode: "screen" }}
     />
   );
