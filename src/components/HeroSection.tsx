@@ -13,7 +13,7 @@ export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
         ref={ref}
         className={`relative h-screen flex items-center justify-center overflow-hidden ${className || ""}`}
       >
-        <video ref={videoRef} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50">
+        <video ref={videoRef} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-30 z-0">
           <source src="/hero-video.mp4" type="video/mp4" />
         </video>
         {children}
