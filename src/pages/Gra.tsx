@@ -18,8 +18,7 @@ const Gra = () => {
         <AntigravityBackground />
         <div className="relative z-10 text-center">
           <h1 className="antigravity-title">
-            <span className="antigravity-word">Anti</span>
-            <span className="antigravity-word">gravity</span>
+            Ultrasound for non-invasive brain-computer interfaces
           </h1>
         </div>
       </HeroSection>
