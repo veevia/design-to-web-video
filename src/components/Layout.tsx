@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/ori", label: "Ori" },
   { href: "/poly", label: "Poly" },
   { href: "/wob", label: "Wob" },
+  { href: "/gra", label: "Gra" },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ children, pageTitle }) => {
